@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PT. Helpy - Solusi Masalah Perusahaan</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header & Navigasi -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <i class="fas fa-hands-helping"></i>
+                    <span>PT. Helpy</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active">Beranda</a></li>
+                    <li><a href="fileArticle.html">Artikel</a></li>
+                    <li><a href="#kategori">Kategori</a></li>
+                    <li><a href="#tentang">Tentang</a></li>
+                    <li><a href="#kontak">Kontak</a></li>
+                </ul>
+                <div class="user-actions">
+                    <div id="auth-buttons">
+                        <a href="auth.html?mode=login" class="btn-outline">Login</a>
+                        <a href="auth.html?mode=register" class="btn-primary">Register</a>
+                    </div>
+                    <div id="user-menu" style="display: none;">
+                        <div class="user-profile" id="user-profile-dropdown">
+                            <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=4A6FA5&color=fff" alt="Avatar">
+                            <span id="user-name">User</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                            <a href="create-article.html"><i class="fas fa-plus-circle"></i> Buat Artikel</a>
+                            <a href="#profile"><i class="fas fa-user"></i> Profil Saya</a>
+                            <hr>
+                            <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+                <button class="menu-toggle" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Solusi Cepat untuk Masalah Perusahaan Anda</h1>
+                <p>Platform troubleshooting internal PT. Helpy membantu karyawan menemukan solusi untuk masalah teknis sehari-hari dengan panduan langkah demi langkah.</p>
+                <div class="search-bar hero-search">
+                    <input type="text" id="global-search" placeholder="Cari solusi masalah...">
+                    <button id="search-btn">
+                        <i class="fas fa-search"></i> Cari
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <h3>250+</h3>
+                        <p>Artikel Solusi</p>
+                    </div>
+                    <div class="stat">
+                        <h3>95%</h3>
+                        <p>Masalah Terselesaikan</p>
+                    </div>
+                    <div class="stat">
+                        <h3>500+</h3>
+                        <p>Pengguna Aktif</p>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Tim kerja perusahaan">
+            </div>
+        </div>
+    </section>
+
+    <!-- Kategori Populer -->
+    <section id="kategori" class="categories">
+        <div class="container">
+            <h2 class="section-title">Kategori Permasalahan</h2>
+            <p class="section-subtitle">Temukan solusi berdasarkan kategori masalah</p>
+            
+            <div class="categories-grid" id="categories-list">
+                <!-- Kategori akan dimuat via JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Artikel Terbaru -->
+    <section id="artikel" class="articles">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Artikel Terbaru</h2>
+                    <p class="section-subtitle">Solusi terkini untuk masalah perusahaan</p>
+                </div>
+                <a href="#" id="view-all-articles" class="btn-outline">Lihat Semua</a>
+            </div>
+            
+            <div class="articles-grid" id="articles-list">
+                <!-- Artikel akan dimuat via JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Artikel Populer -->
+    <section class="popular-articles">
+        <div class="container">
+            <h2 class="section-title">Artikel Paling Banyak Dilihat</h2>
+            <p class="section-subtitle">Solusi yang paling sering dicari karyawan</p>
+            
+            <div class="articles-grid" id="popular-articles-list">
+                <!-- Artikel populer akan dimuat via JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Jenis Masalah -->
+    <section class="problem-types">
+        <div class="container">
+            <h2 class="section-title">Jenis Masalah yang Kami Tangani</h2>
+            
+            <div class="types-grid">
+                <div class="type-card">
+                    <div class="type-icon">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h3>Masalah Teknologi</h3>
+                    <p>Solusi untuk masalah hardware, software, jaringan, dan sistem IT perusahaan.</p>
+                </div>
+                <div class="type-card">
+                    <div class="type-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3>Masalah Operasional</h3>
+                    <p>Panduan untuk masalah proses kerja, SOP, dan efisiensi operasional.</p>
+                </div>
+                <div class="type-card">
+                    <div class="type-icon">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <h3>Masalah Administrasi</h3>
+                    <p>Solusi untuk pengelolaan dokumen, laporan, dan administrasi kantor.</p>
+                </div>
+                <div class="type-card">
+                    <div class="type-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Masalah HRD</h3>
+                    <p>Panduan untuk masalah kepegawaian, cuti, dan administrasi personalia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Masih Bingung Menyelesaikan Masalah?</h2>
+                <p>Bergabunglah dengan komunitas PT. Helpy dan dapatkan bantuan langsung dari tim IT dan senior berpengalaman.</p>
+                <div class="cta-buttons">
+                    <a href="auth.html?mode=register" class="btn-primary">Daftar Sekarang</a>
+                    <a href="#kontak" class="btn-outline">Hubungi Admin</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="kontak">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <a href="index.html" class="logo">
+                        <i class="fas fa-hands-helping"></i>
+                        <span>PT. Helpy</span>
+                    </a>
+                    <p>Platform troubleshooting internal perusahaan yang membantu karyawan menyelesaikan masalah teknis dengan cepat dan efisien.</p>
+                    <!-- <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div> -->
+                </div>
+                <div class="footer-links">
+                    <h3>Tautan Cepat</h3>
+                    <ul>
+                        <li><a href="index.html">Beranda</a></li>
+                        <li><a href="#artikel">Artikel</a></li>
+                        <li><a href="#kategori">Kategori</a></li>
+                        <li><a href="#tentang">Tentang Kami</a></li>
+                        <li><a href="#kontak">Kontak</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3>Kategori Populer</h3>
+                    <ul id="footer-categories">
+                        <!-- Kategori footer akan dimuat via JavaScript -->
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Kontak Kami</h3>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Jl. Perusahaan No. 123, Jakarta</li>
+                        <li><i class="fas fa-phone"></i> (021) 1234-5678</li>
+                        <li><i class="fas fa-envelope"></i> helpdesk@pthelpy.co.id</li>
+                        <li><i class="fas fa-clock"></i> Senin - Jumat: 8:00 - 17:00</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PT. Helpy. Hak cipta dilindungi undang-undang.</p>
+                <p>Sistem Troubleshooting Internal Perusahaan</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>

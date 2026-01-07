@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Artikel - PT. Helpy</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .article-detail {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .article-header {
+            margin-bottom: 40px;
+        }
+        
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: var(--gray-medium);
+            font-size: 0.9rem;
+        }
+        
+        .article-category {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        
+        .article-title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            line-height: 1.3;
+        }
+        
+        .article-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            color: var(--gray-medium);
+        }
+        
+        .article-content {
+            line-height: 1.8;
+            color: var(--gray-dark);
+            margin-bottom: 40px;
+        }
+        
+        .article-content h2 {
+            margin: 30px 0 15px;
+            color: var(--dark-color);
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+        }
+        
+        .article-content ul, .article-content ol {
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+        
+        .article-content li {
+            margin-bottom: 10px;
+        }
+        
+        .article-actions {
+            display: flex;
+            gap: 15px;
+            margin: 40px 0;
+            padding: 20px;
+            background-color: #f8fafc;
+            border-radius: var(--border-radius);
+        }
+        
+        .rating-section {
+            margin: 40px 0;
+            padding: 30px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .rating-stars {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .star {
+            font-size: 1.5rem;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .star.active,
+        .star:hover {
+            color: #f59e0b;
+        }
+        
+        .related-articles {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid var(--gray-light);
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .article-image {
+            width: 100%;
+            height: 400px;
+            background-color: var(--gray-light);
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-medium);
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .tag {
+            padding: 5px 15px;
+            background-color: #e2e8f0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--gray-dark);
+        }
+        
+        .solution-steps {
+            margin: 30px 0;
+        }
+        
+        .step {
+            background-color: white;
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-weight: 600;
+        }
+        
+        .step h3 {
+            display: inline;
+            font-size: 1.1rem;
+        }
+        
+        .step p {
+            margin-top: 10px;
+            color: var(--gray-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <i class="fas fa-hands-helping"></i>
+                    <span>PT. Helpy</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="articles.html">Artikel</a></li>
+                    <li><a href="categories.html">Kategori</a></li>
+                    <li><a href="#tentang">Tentang</a></li>
+                </ul>
+                <div class="user-actions" id="user-actions">
+                    <!-- User menu will be loaded via JavaScript -->
+                </div>
+                <button class="menu-toggle" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Article Detail -->
+    <main class="container">
+        <div class="article-detail">
+            <a href="javascript:history.back()" class="back-button">
+                <i class="fas fa-arrow-left"></i> Kembali
+            </a>
+            
+            <div class="article-header">
+                <div class="article-meta">
+                    <span id="article-date">Tanggal tidak tersedia</span>
+                    <span id="article-author">Penulis tidak tersedia</span>
+                </div>
+                
+                <div id="article-category" class="article-category">Kategori</div>
+                
+                <h1 id="article-title" class="article-title">Judul Artikel</h1>
+                
+                <div class="article-stats">
+                    <span><i class="fas fa-eye"></i> <span id="article-views">0</span> Views</span>
+                    <span><i class="fas fa-star"></i> Rating: <span id="article-rating">0.0</span> (<span id="article-rating-count">0</span>)</span>
+                </div>
+                
+                <div class="tags" id="article-tags">
+                    <!-- Tags will be loaded via JavaScript -->
+                </div>
+            </div>
+            
+            <div class="article-image" id="article-image">
+                <i class="fas fa-question-circle fa-5x"></i>
+            </div>
+            
+            <div id="article-content" class="article-content">
+                <!-- Content will be loaded via JavaScript -->
+            </div>
+            
+            <div class="solution-steps" id="solution-steps">
+                <!-- Solution steps will be loaded via JavaScript -->
+            </div>
+            
+            <div class="article-actions">
+                <button id="rate-article-btn" class="btn-primary">
+                    <i class="fas fa-star"></i> Rate Artikel Ini
+                </button>
+                <button id="print-article-btn" class="btn-outline">
+                    <i class="fas fa-print"></i> Cetak
+                </button>
+                <button id="share-article-btn" class="btn-outline">
+                    <i class="fas fa-share"></i> Bagikan
+                </button>
+            </div>
+            
+            <div class="rating-section" id="rating-section" style="display: none;">
+                <h3>Beri Rating untuk Artikel Ini</h3>
+                <p>Bagaimana pengalaman Anda dengan solusi ini?</p>
+                
+                <div class="rating-stars">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+                
+                <button id="submit-rating-btn" class="btn-primary" style="margin-top: 15px;">
+                    Submit Rating
+                </button>
+            </div>
+            
+            <div class="related-articles">
+                <h2>Artikel Terkait</h2>
+                <div class="articles-grid" id="related-articles">
+                    <!-- Related articles will be loaded via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <a href="index.html" class="logo">
+                        <i class="fas fa-hands-helping"></i>
+                        <span>PT. Helpy</span>
+                    </a>
+                    <p>Platform troubleshooting internal perusahaan yang membantu karyawan menyelesaikan masalah teknis dengan cepat dan efisien.</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Tautan Cepat</h3>
+                    <ul>
+                        <li><a href="index.html">Beranda</a></li>
+                        <li><a href="articles.html">Artikel</a></li>
+                        <li><a href="categories.html">Kategori</a></li>
+                        <li><a href="auth.html?mode=login">Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Kontak Bantuan</h3>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> (021) 1234-5678</li>
+                        <li><i class="fas fa-envelope"></i> helpdesk@pthelpy.co.id</li>
+                        <li><i class="fas fa-clock"></i> Senin - Jumat: 8:00 - 17:00</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PT. Helpy. Hak cipta dilindungi undang-undang.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // API Base URL
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        
+        // Get article ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const articleId = urlParams.get('id');
+        
+        // Initialize article page
+        async function initArticlePage() {
+            // Check authentication status
+            checkAuthStatus();
+            
+            // Load article data
+            if (articleId) {
+                await loadArticle(articleId);
+                await loadRelatedArticles(articleId);
+            } else {
+                showError('Artikel tidak ditemukan');
+            }
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Setup mobile menu
+            setupMobileMenu();
+        }
+        
+        // Load article data
+        async function loadArticle(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/articles/${id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayArticle(result.data);
+                } else {
+                    showError('Artikel tidak ditemukan');
+                }
+            } catch (error) {
+                console.error('Error loading article:', error);
+                displayArticle(getFallbackArticle());
+            }
+        }
+        
+        // Display article
+        function displayArticle(article) {
+            // Update metadata
+            document.getElementById('article-title').textContent = article.judul;
+            document.getElementById('article-date').textContent = formatDate(article.created_at);
+            document.getElementById('article-author').textContent = article.author_nama || 'Admin';
+            document.getElementById('article-views').textContent = article.views || 0;
+            document.getElementById('article-rating').textContent = 
+                article.rating ? parseFloat(article.rating).toFixed(1) : '0.0';
+            document.getElementById('article-rating-count').textContent = article.rating_count || 0;
+            
+            // Update category
+            if (article.kategori && article.kategori.length > 0) {
+                document.getElementById('article-category').textContent = article.kategori[0].nama;
+            }
+            
+            // Update tags
+            if (article.tags && article.tags.length > 0) {
+                const tagsContainer = document.getElementById('article-tags');
+                article.tags.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = 'tag';
+                    span.textContent = tag;
+                    tagsContainer.appendChild(span);
+                });
+            }
+            
+            // Update content
+            document.getElementById('article-content').innerHTML = article.konten || 
+                '<p>Konten artikel tidak tersedia.</p>';
+            
+            // Display solution steps if available
+            if (article.langkahPenyelesaian && article.langkahPenyelesaian.length > 0) {
+                const stepsContainer = document.getElementById('solution-steps');
+                let stepsHTML = '<h2>Langkah-langkah Penyelesaian</h2>';
+                
+                article.langkahPenyelesaian.forEach((step, index) => {
+                    stepsHTML += `
+                        <div class="step">
+                            <span class="step-number">${index + 1}</span>
+                            <h3>${step.judul}</h3>
+                            <p>${step.deskripsi}</p>
+                        </div>
+                    `;
+                });
+                
+                stepsContainer.innerHTML = stepsHTML;
+            }
+        }
+        
+        // Load related articles
+        async function loadRelatedArticles(currentId) {
+            try {
+                // For now, load recent articles as related
+                const response = await fetch(`${API_BASE_URL}/articles?limit=3`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Filter out current article
+                    const related = result.data.filter(article => article.id != currentId);
+                    displayRelatedArticles(related.slice(0, 3));
+                }
+            } catch (error) {
+                console.error('Error loading related articles:', error);
+            }
+        }
+        
+        // Display related articles
+        function displayRelatedArticles(articles) {
+            const container = document.getElementById('related-articles');
+            
+            if (!articles || articles.length === 0) {
+                container.innerHTML = '<p>Tidak ada artikel terkait.</p>';
+                return;
+            }
+            
+            let html = '';
+            articles.forEach(article => {
+                html += `
+                    <div class="article-card">
+                        <div class="article-image">
+                            <i class="fas fa-question-circle fa-3x"></i>
+                        </div>
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span class="article-category">${article.tipe || 'Panduan'}</span>
+                            </div>
+                            <h3>${article.judul}</h3>
+                            <div class="article-stats">
+                                <a href="article.html?id=${article.id}" class="btn-primary" style="padding: 5px 15px; font-size: 0.8rem;">Baca</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Rate article button
+            document.getElementById('rate-article-btn').addEventListener('click', () => {
+                if (!authToken) {
+                    window.location.href = 'auth.html?mode=login';
+                    return;
+                }
+                
+                document.getElementById('rating-section').style.display = 'block';
+                setupStarRating();
+            });
+            
+            // Print button
+            document.getElementById('print-article-btn').addEventListener('click', () => {
+                window.print();
+            });
+            
+            // Share button
+            document.getElementById('share-article-btn').addEventListener('click', () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.getElementById('article-title').textContent,
+                        text: 'Lihat solusi masalah di PT. Helpy',
+                        url: window.location.href
+                    });
+                } else {
+                    // Fallback: Copy to clipboard
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('Link artikel telah disalin ke clipboard!');
+                }
+            });
+        }
+        
+        // Setup star rating
+        function setupStarRating() {
+            const stars = document.querySelectorAll('.star');
+            let selectedRating = 0;
+            
+            stars.forEach(star => {
+                star.addEventListener('mouseover', (e) => {
+                    const rating = parseInt(e.target.getAttribute('data-rating'));
+                    highlightStars(rating);
+                });
+                
+                star.addEventListener('click', (e) => {
+                    selectedRating = parseInt(e.target.getAttribute('data-rating'));
+                    highlightStars(selectedRating);
+                });
+            });
+            
+            // Reset stars when mouse leaves
+            document.querySelector('.rating-stars').addEventListener('mouseleave', () => {
+                highlightStars(selectedRating);
+            });
+            
+            // Submit rating
+            document.getElementById('submit-rating-btn').addEventListener('click', async () => {
+                if (selectedRating === 0) {
+                    alert('Pilih rating terlebih dahulu!');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/articles/${articleId}/rate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({ rating: selectedRating })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Terima kasih atas rating Anda!');
+                        document.getElementById('rating-section').style.display = 'none';
+                        
+                        // Update displayed rating
+                        document.getElementById('article-rating').textContent = 
+                            parseFloat(result.data.rating).toFixed(1);
+                        document.getElementById('article-rating-count').textContent = result.data.ratingCount;
+                    } else {
+                        alert(result.message || 'Gagal menyimpan rating');
+                    }
+                } catch (error) {
+                    console.error('Error submitting rating:', error);
+                    alert('Terjadi kesalahan saat menyimpan rating');
+                }
+            });
+        }
+        
+        // Highlight stars based on rating
+        function highlightStars(rating) {
+            const stars = document.querySelectorAll('.star');
+            
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+        
+        // Check authentication status
+        function checkAuthStatus() {
+            const userActions = document.getElementById('user-actions');
+            
+            if (authToken) {
+                // User is logged in
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                
+                userActions.innerHTML = `
+                    <div id="user-menu">
+                        <div class="user-profile" id="user-profile-dropdown">
+                            <img id="user-avatar" src="${currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.nama)}&background=4A6FA5&color=fff`}" alt="Avatar">
+                            <span id="user-name">${currentUser.nama}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                            <a href="create-article.html"><i class="fas fa-plus-circle"></i> Buat Artikel</a>
+                            <a href="#profile"><i class="fas fa-user"></i> Profil Saya</a>
+                            <hr>
+                            <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </div>
+                `;
+                
+                // Setup user dropdown
+                setTimeout(() => {
+                    setupUserDropdown();
+                }, 100);
+            } else {
+                // User is not logged in
+                userActions.innerHTML = `
+                    <div id="auth-buttons">
+                        <a href="auth.html?mode=login" class="btn-outline">Login</a>
+                        <a href="auth.html?mode=register" class="btn-primary">Register</a>
+                    </div>
+                `;
+            }
+        }
+        
+        // Setup user dropdown
+        function setupUserDropdown() {
+            const userProfile = document.getElementById('user-profile-dropdown');
+            const dropdown = document.querySelector('.dropdown-menu');
+            
+            if (userProfile && dropdown) {
+                userProfile.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                });
+                
+                // Logout button
+                document.getElementById('logout-btn').addEventListener('click', logout);
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', () => {
+                    dropdown.style.display = 'none';
+                });
+            }
+        }
+        
+        // Setup mobile menu
+        function setupMobileMenu() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                });
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+        
+        // Format date helper
+        function formatDate(dateString) {
+            if (!dateString) return 'Tanggal tidak tersedia';
+            
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+        
+        // Error handler
+        function showError(message) {
+            const articleDetail = document.querySelector('.article-detail');
+            articleDetail.innerHTML = `
+                <div style="text-align: center; padding: 50px 20px;">
+                    <i class="fas fa-exclamation-triangle fa-3x" style="color: var(--danger-color); margin-bottom: 20px;"></i>
+                    <h2 style="color: var(--danger-color); margin-bottom: 15px;">Terjadi Kesalahan</h2>
+                    <p style="color: var(--gray-medium); margin-bottom: 30px;">${message}</p>
+                    <a href="index.html" class="btn-primary">Kembali ke Beranda</a>
+                </div>
+            `;
+        }
+        
+        // Fallback article data
+        function getFallbackArticle() {
+            return {
+                id: 1,
+                judul: 'Cara Mengatasi Printer Tidak Terdeteksi',
+                konten: `
+                    <h2>Masalah Printer Tidak Terdeteksi</h2>
+                    <p>Printer yang tidak terdeteksi oleh komputer adalah masalah umum yang sering terjadi di lingkungan kerja. Masalah ini bisa disebabkan oleh berbagai faktor, termasuk masalah koneksi, driver, atau pengaturan sistem.</p>
+                    
+                    <h2>Penyebab Umum</h2>
+                    <ul>
+                        <li>Kabel USB tidak terhubung dengan baik</li>
+                        <li>Driver printer tidak terinstal atau rusak</li>
+                        <li>Printer dalam status offline</li>
+                        <li>Masalah pada port USB komputer</li>
+                        <li>Firewall atau antivirus memblokir koneksi</li>
+                    </ul>
+                `,
+                created_at: '2024-01-15T10:30:00',
+                author_nama: 'Admin IT',
+                views: 156,
+                rating: 4.5,
+                rating_count: 12,
+                kategori: [{ nama: 'IT & Teknologi' }],
+                tags: ['printer', 'troubleshooting', 'hardware'],
+                langkahPenyelesaian: [
+                    {
+                        judul: 'Periksa Koneksi Kabel',
+                        deskripsi: 'Pastikan kabel USB printer terhubung dengan baik ke komputer dan printer. Coba cabut dan pasang kembali kabel di kedua ujung.'
+                    },
+                    {
+                        judul: 'Restart Printer dan Komputer',
+                        deskripsi: 'Matikan printer dan komputer, tunggu 30 detik, kemudian nyalakan kembali. Langkah ini sering menyelesaikan masalah deteksi.'
+                    },
+                    {
+                        judul: 'Cek Status Printer',
+                        deskripsi: 'Buka Control Panel > Devices and Printers. Pastikan printer tidak dalam status offline. Klik kanan printer dan pilih "See what\'s printing" untuk melihat status.'
+                    }
+                ]
+            };
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', initArticlePage);
+    </script>
+</body>
+</html>

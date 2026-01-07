@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Register - PT. Helpy</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        
+        .auth-box {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        
+        .auth-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .auth-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 5px;
+            margin-top: 20px;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        
+        .auth-tab.active {
+            background-color: white;
+            color: var(--primary-color);
+        }
+        
+        .auth-body {
+            padding: 30px;
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .auth-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-light);
+            color: var(--gray-medium);
+        }
+        
+        .auth-footer a {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .error-message {
+            background-color: #fee;
+            color: var(--danger-color);
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message {
+            background-color: #d1fae5;
+            color: var(--success-color);
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .back-home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <a href="index.html" class="back-home">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+                </a>
+                <h1>PT. Helpy</h1>
+                <p>Masuk atau daftar untuk mengakses solusi</p>
+                
+                <div class="auth-tabs">
+                    <div class="auth-tab active" data-tab="login">Login</div>
+                    <div class="auth-tab" data-tab="register">Register</div>
+                </div>
+            </div>
+            
+            <div class="auth-body">
+                <div id="error-message" class="error-message"></div>
+                <div id="success-message" class="success-message"></div>
+                
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form active">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" placeholder="email@perusahaan.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" placeholder="Masukkan password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 15px;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    
+                    <div class="auth-footer">
+                        <p>Belum punya akun? <a href="#" class="switch-to-register">Daftar disini</a></p>
+                    </div>
+                </form>
+                
+                <!-- Register Form -->
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="register-nama">Nama Lengkap</label>
+                        <input type="text" id="register-nama" placeholder="Nama lengkap Anda" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="email@perusahaan.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" placeholder="Minimal 6 karakter" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-departemen">Departemen</label>
+                        <select id="register-departemen">
+                            <option value="">Pilih Departemen</option>
+                            <option value="IT">IT</option>
+                            <option value="HRD">HRD</option>
+                            <option value="Keuangan">Keuangan</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Operasional">Operasional</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-role">Role</label>
+                        <select id="register-role">
+                            <option value="karyawan">Karyawan</option>
+                            <option value="teknisi">Teknisi</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 15px;">
+                        <i class="fas fa-user-plus"></i> Daftar
+                    </button>
+                    
+                    <div class="auth-footer">
+                        <p>Sudah punya akun? <a href="#" class="switch-to-login">Login disini</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_BASE_URL = 'http://localhost:3000/api';
+        
+        // Get mode from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        
+        // Initialize auth page
+        function initAuthPage() {
+            // Setup tab switching
+            setupTabs();
+            
+            // Setup form submissions
+            setupForms();
+            
+            // Set initial tab based on URL parameter
+            if (mode === 'register') {
+                switchToRegister();
+            }
+        }
+        
+        // Setup tab switching
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.auth-tab');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding form
+                    if (tabName === 'login') {
+                        loginForm.classList.add('active');
+                        registerForm.classList.remove('active');
+                    } else {
+                        loginForm.classList.remove('active');
+                        registerForm.classList.add('active');
+                    }
+                });
+            });
+            
+            // Setup switch links
+            document.querySelectorAll('.switch-to-login').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchToLogin();
+                });
+            });
+            
+            document.querySelectorAll('.switch-to-register').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchToRegister();
+                });
+            });
+        }
+        
+        function switchToLogin() {
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                if (tab.getAttribute('data-tab') === 'login') {
+                    tab.click();
+                }
+            });
+        }
+        
+        function switchToRegister() {
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                if (tab.getAttribute('data-tab') === 'register') {
+                    tab.click();
+                }
+            });
+        }
+        
+        // Setup form submissions
+        function setupForms() {
+            // Login form
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                if (!email || !password) {
+                    showError('Email dan password harus diisi');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Save token and user data
+                        localStorage.setItem('authToken', result.data.token);
+                        localStorage.setItem('currentUser', JSON.stringify(result.data.user));
+                        
+                        showSuccess('Login berhasil! Mengalihkan...');
+                        
+                        // Redirect to home page after 1 second
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    } else {
+                        showError(result.message || 'Login gagal');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showError('Terjadi kesalahan. Silakan coba lagi.');
+                }
+            });
+            
+            // Register form
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const userData = {
+                    nama: document.getElementById('register-nama').value,
+                    email: document.getElementById('register-email').value,
+                    password: document.getElementById('register-password').value,
+                    departemen: document.getElementById('register-departemen').value,
+                    role: document.getElementById('register-role').value
+                };
+                
+                // Validation
+                if (!userData.nama || !userData.email || !userData.password) {
+                    showError('Nama, email, dan password harus diisi');
+                    return;
+                }
+                
+                if (userData.password.length < 6) {
+                    showError('Password minimal 6 karakter');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Save token and user data
+                        localStorage.setItem('authToken', result.data.token);
+                        localStorage.setItem('currentUser', JSON.stringify(result.data.user));
+                        
+                        showSuccess('Pendaftaran berhasil! Mengalihkan...');
+                        
+                        // Redirect to home page after 1 second
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    } else {
+                        showError(result.message || 'Pendaftaran gagal');
+                    }
+                } catch (error) {
+                    console.error('Register error:', error);
+                    showError('Terjadi kesalahan. Silakan coba lagi.');
+                }
+            });
+        }
+        
+        // Helper functions
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Hide success message if showing
+            document.getElementById('success-message').style.display = 'none';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            // Hide error message if showing
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initAuthPage);
+    </script>
+</body>
+</html>

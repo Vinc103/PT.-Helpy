@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - PT. Helpy</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 0 25px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.8);
+            transition: var(--transition);
+        }
+        
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid white;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-icon.blue {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        
+        .stat-icon.green {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .stat-icon.orange {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .stat-icon.red {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .stat-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .stat-info p {
+            color: var(--gray-medium);
+            font-size: 0.9rem;
+        }
+        
+        .recent-table {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+        }
+        
+        .recent-table h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background-color: #f8fafc;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        th {
+            font-weight: 600;
+            color: var(--gray-dark);
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-published {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-draft {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+            
+            .overlay.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="logo" style="color: white;">
+                    <i class="fas fa-hands-helping"></i>
+                    <span>PT. Helpy</span>
+                </a>
+                <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-top: 10px;">Admin Dashboard</p>
+            </div>
+            
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="articles.html">
+                    <i class="fas fa-newspaper"></i> Artikel
+                </a>
+                <a href="create-article.html">
+                    <i class="fas fa-plus-circle"></i> Buat Artikel
+                </a>
+                <a href="categories.html">
+                    <i class="fas fa-folder"></i> Kategori
+                </a>
+                <a href="#">
+                    <i class="fas fa-users"></i> Pengguna
+                </a>
+                <a href="#">
+                    <i class="fas fa-chart-bar"></i> Statistik
+                </a>
+                <a href="#">
+                    <i class="fas fa-cog"></i> Pengaturan
+                </a>
+                <hr style="margin: 20px 25px; border-color: rgba(255, 255, 255, 0.1);">
+                <a href="index.html">
+                    <i class="fas fa-home"></i> Kembali ke Beranda
+                </a>
+                <a href="#" id="logout-sidebar">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div>
+                    <h1>Dashboard Admin</h1>
+                    <p style="color: var(--gray-medium);">Selamat datang, <span id="admin-name">Administrator</span>!</p>
+                </div>
+                <button class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-articles">0</h3>
+                        <p>Total Artikel</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-views">0</h3>
+                        <p>Total Views</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-users">0</h3>
+                        <p>Pengguna</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="avg-rating">0.0</h3>
+                        <p>Rating Rata-rata</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Articles -->
+            <div class="recent-table">
+                <h2>Artikel Terbaru</h2>
+                <table id="recent-articles-table">
+                    <thead>
+                        <tr>
+                            <th>Judul</th>
+                            <th>Kategori</th>
+                            <th>Status</th>
+                            <th>Views</th>
+                            <th>Tanggal</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-articles-body">
+                        <!-- Data akan diisi via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <a href="create-article.html" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px;">
+                    <i class="fas fa-plus"></i> Buat Artikel Baru
+                </a>
+                <a href="categories.html" class="btn-outline" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px;">
+                    <i class="fas fa-folder-plus"></i> Kelola Kategori
+                </a>
+                <a href="articles.html" class="btn-outline" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px;">
+                    <i class="fas fa-list"></i> Lihat Semua Artikel
+                </a>
+            </div>
+        </main>
+        
+        <!-- Mobile Overlay -->
+        <div class="overlay"></div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        // Check authentication
+        if (!authToken || !currentUser) {
+            window.location.href = 'auth.html?mode=login';
+        }
+        
+        // Initialize dashboard
+        async function initDashboard() {
+            // Load user info
+            document.getElementById('admin-name').textContent = currentUser.nama;
+            
+            // Load dashboard stats
+            await loadDashboardStats();
+            
+            // Load recent articles
+            await loadRecentArticles();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Setup mobile menu
+            setupMobileMenu();
+        }
+        
+        // Load dashboard statistics
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/articles/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('total-articles').textContent = result.data.total_articles || 0;
+                    document.getElementById('total-views').textContent = result.data.total_views || 0;
+                    document.getElementById('avg-rating').textContent = 
+                        result.data.avg_rating ? parseFloat(result.data.avg_rating).toFixed(1) : '0.0';
+                        
+                    // Get user count (need to implement this API endpoint)
+                    loadUserCount();
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Load user count
+        async function loadUserCount() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('total-users').textContent = result.pagination?.total || result.data?.length || 0;
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+        
+        // Load recent articles
+        async function loadRecentArticles() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/articles?limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayRecentArticles(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading recent articles:', error);
+                displayRecentArticles(getFallbackArticles().slice(0, 5));
+            }
+        }
+        
+        // Display recent articles
+        function displayRecentArticles(articles) {
+            const container = document.getElementById('recent-articles-body');
+            
+            if (!articles || articles.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--gray-medium);">
+                            Belum ada artikel tersedia.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            articles.forEach(article => {
+                const kategori = article.kategori_nama ? article.kategori_nama.split(',')[0] : 'Umum';
+                
+                html += `
+                    <tr>
+                        <td style="font-weight: 500;">${article.judul}</td>
+                        <td>${kategori}</td>
+                        <td>
+                            <span class="status-badge status-${article.status || 'draft'}">
+                                ${article.status === 'published' ? 'Published' : 'Draft'}
+                            </span>
+                        </td>
+                        <td>${article.views || 0}</td>
+                        <td>${formatDate(article.created_at)}</td>
+                        <td>
+                            <a href="article.html?id=${article.id}" class="btn-outline btn-sm">Lihat</a>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Format date helper
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Logout buttons
+            document.getElementById('logout-sidebar').addEventListener('click', logout);
+            
+            // Add logout button to main area if needed
+            const mainLogoutBtn = document.createElement('button');
+            mainLogoutBtn.className = 'btn-outline';
+            mainLogoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+            mainLogoutBtn.style.marginLeft = '20px';
+            mainLogoutBtn.addEventListener('click', logout);
+            
+            document.querySelector('.dashboard-header').appendChild(mainLogoutBtn);
+        }
+        
+        // Setup mobile menu
+        function setupMobileMenu() {
+            const menuToggle = document.querySelector('.mobile-menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+            
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+        
+        // Fallback data
+        function getFallbackArticles() {
+            return [
+                { 
+                    id: 1, 
+                    judul: 'Cara Mengatasi Printer Tidak Terdeteksi', 
+                    status: 'published',
+                    created_at: '2024-01-15',
+                    views: 156,
+                    kategori_nama: 'IT & Teknologi'
+                },
+                { 
+                    id: 2, 
+                    judul: 'Panduan Penggunaan Sistem Absensi Online', 
+                    status: 'published',
+                    created_at: '2024-01-10',
+                    views: 203,
+                    kategori_nama: 'HRD & Personalia'
+                },
+                { 
+                    id: 3, 
+                    judul: 'Solusi Email Tidak Bisa Mengirim Attachment', 
+                    status: 'draft',
+                    created_at: '2024-01-05',
+                    views: 98,
+                    kategori_nama: 'IT & Teknologi'
+                }
+            ];
+        }
+        
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
