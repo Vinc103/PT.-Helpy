@@ -1,44 +1,117 @@
-// src/config/database.js
-console.log('Loading database module...');
+const mysql = require('mysql2/promise');
 
-const mysql = require('mysql2');
-
-// Buat koneksi sederhana
-const connection = mysql.createConnection({
-  host: '127.0.0.1',
-  user: 'root',
-  password: '',  // XAMPP default kosong
-  database: 'wiki_helper'
+const pool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'wiki_helper',
+    port: process.env.DB_PORT || 3306,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
 });
 
-// Connect
-connection.connect((err) => {
-  if (err) {
-    console.log('Database error:', err.message);
-    console.log('Tips: Buat database "wiki_helper" di phpMyAdmin dulu');
-  } else {
-    console.log('Database connected: wiki_helper');
-  }
-});
-
-// Export fungsi sederhana
-module.exports = {
-  query: (sql, params = []) => {
-    return new Promise((resolve, reject) => {
-      console.log('SQL:', sql.substring(0, 50) + '...');
-      connection.query(sql, params, (err, results) => {
-        if (err) {
-          console.log('SQL Error:', err.message);
-          reject(err);
-        } else {
-          resolve(results);
-        }
-      });
+// Test connection
+pool.getConnection()
+    .then(connection => {
+        console.log('✅ Database connected successfully to:', process.env.DB_NAME || 'wiki_helper');
+        connection.release();
+    })
+    .catch(error => {
+        console.error('❌ Database connection failed:', error.message);
     });
-  }
+
+// Query helper function
+async function query(sql, params) {
+    try {
+        const [rows] = await pool.execute(sql, params);
+        return rows;
+    } catch (error) {
+        console.error('Database query error:', error.message);
+        throw error;
+    }
+}
+
+// For compatibility with existing code
+const db = {
+    query: async (sql, params) => {
+        try {
+            const [rows] = await pool.execute(sql, params);
+            return rows;
+        } catch (error) {
+            console.error('Database query error:', error.message);
+            throw error;
+        }
+    },
+    
+    // For insert operations that need last insert ID
+    execute: async (sql, params) => {
+        try {
+            const [result] = await pool.execute(sql, params);
+            return result;
+        } catch (error) {
+            console.error('Database execute error:', error.message);
+            throw error;
+        }
+    },
+    
+    // Get connection from pool
+    getConnection: () => pool.getConnection(),
+    
+    // Close pool (for graceful shutdown)
+    close: async () => {
+        await pool.end();
+    }
 };
 
+module.exports = db;
 
+
+
+//---------------Versi 2
+// // src/config/database.js
+// console.log('Loading database module...');
+
+// const mysql = require('mysql2');
+
+// // Buat koneksi sederhana
+// const connection = mysql.createConnection({
+//   host: '127.0.0.1',
+//   user: 'root',
+//   password: '',  // XAMPP default kosong
+//   database: 'wiki_helper'
+// });
+
+// // Connect
+// connection.connect((err) => {
+//   if (err) {
+//     console.log('Database error:', err.message);
+//     console.log('Tips: Buat database "wiki_helper" di phpMyAdmin dulu');
+//   } else {
+//     console.log('Database connected: wiki_helper');
+//   }
+// });
+
+// // Export fungsi sederhana
+// module.exports = {
+//   query: (sql, params = []) => {
+//     return new Promise((resolve, reject) => {
+//       console.log('SQL:', sql.substring(0, 50) + '...');
+//       connection.query(sql, params, (err, results) => {
+//         if (err) {
+//           console.log('SQL Error:', err.message);
+//           reject(err);
+//         } else {
+//           resolve(results);
+//         }
+//       });
+//     });
+//   }
+// };
+
+// Versi 1
 // // src/config/database.js
 // const mysql = require('mysql2');
 

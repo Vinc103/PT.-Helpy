@@ -326,93 +326,114 @@
     </footer>
 
     <script>
-        // API Base URL
-        const API_BASE_URL = 'http://localhost:3000/api';
-        const authToken = localStorage.getItem('authToken');
-        
-        // Get article ID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const articleId = urlParams.get('id');
-        
-        // Initialize article page
-        async function initArticlePage() {
-            // Check authentication status
-            checkAuthStatus();
-            
-            // Load article data
-            if (articleId) {
-                await loadArticle(articleId);
-                await loadRelatedArticles(articleId);
-            } else {
-                showError('Artikel tidak ditemukan');
-            }
-            
-            // Setup event listeners
-            setupEventListeners();
-            
-            // Setup mobile menu
-            setupMobileMenu();
-        }
+    // API Base URL
+    const API_BASE_URL = 'http://localhost:3000/api';
+    const authToken = localStorage.getItem('authToken');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    
+    // Get article ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const articleId = urlParams.get('id');
+    
+    // Initialize article page
+    async function initArticlePage() {
+        // Check authentication status
+        checkAuthStatus();
         
         // Load article data
-        async function loadArticle(id) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/articles/${id}`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    displayArticle(result.data);
-                } else {
-                    showError('Artikel tidak ditemukan');
-                }
-            } catch (error) {
-                console.error('Error loading article:', error);
-                displayArticle(getFallbackArticle());
-            }
+        if (articleId) {
+            await loadArticle(articleId);
+            await loadRelatedArticles(articleId);
+        } else {
+            showError('Artikel tidak ditemukan');
         }
         
-        // Display article
-        function displayArticle(article) {
-            // Update metadata
-            document.getElementById('article-title').textContent = article.judul;
-            document.getElementById('article-date').textContent = formatDate(article.created_at);
-            document.getElementById('article-author').textContent = article.author_nama || 'Admin';
-            document.getElementById('article-views').textContent = article.views || 0;
-            document.getElementById('article-rating').textContent = 
-                article.rating ? parseFloat(article.rating).toFixed(1) : '0.0';
-            document.getElementById('article-rating-count').textContent = article.rating_count || 0;
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Setup mobile menu
+        setupMobileMenu();
+    }
+    
+    // Load article data
+    async function loadArticle(id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/articles/${id}`);
+            const result = await response.json();
             
-            // Update category
-            if (article.kategori && article.kategori.length > 0) {
-                document.getElementById('article-category').textContent = article.kategori[0].nama;
-            }
-            
-            // Update tags
-            if (article.tags && article.tags.length > 0) {
-                const tagsContainer = document.getElementById('article-tags');
-                article.tags.forEach(tag => {
-                    const span = document.createElement('span');
-                    span.className = 'tag';
-                    span.textContent = tag;
-                    tagsContainer.appendChild(span);
-                });
-            }
-            
-            // Update content
-            document.getElementById('article-content').innerHTML = article.konten || 
-                '<p>Konten artikel tidak tersedia.</p>';
-            
-            // Display solution steps if available
-            if (article.langkahPenyelesaian && article.langkahPenyelesaian.length > 0) {
-                const stepsContainer = document.getElementById('solution-steps');
-                let stepsHTML = '<h2>Langkah-langkah Penyelesaian</h2>';
+            if (result.success) {
+                displayArticle(result.data);
+            } else {
+                // Try fallback if API returns error
+                try {
+                    const articlesResponse = await fetch(`${API_BASE_URL}/articles`);
+                    const articlesResult = await articlesResponse.json();
+                    
+                    if (articlesResult.success) {
+                        const article = articlesResult.data.find(a => a.id == id);
+                        if (article) {
+                            displayArticle(article);
+                            return;
+                        }
+                    }
+                } catch (fallbackError) {
+                    console.log('Fallback failed:', fallbackError);
+                }
                 
+                showError('Artikel tidak ditemukan');
+            }
+        } catch (error) {
+            console.error('Error loading article:', error);
+            displayArticle(getFallbackArticle());
+        }
+    }
+    
+    // Display article
+    function displayArticle(article) {
+        // Update metadata
+        document.getElementById('article-title').textContent = article.judul || article.title || 'Judul Artikel';
+        document.getElementById('article-date').textContent = formatDate(article.created_at || article.created_date);
+        document.getElementById('article-author').textContent = article.author_nama || article.author || 'Admin';
+        document.getElementById('article-views').textContent = article.views || article.view_count || 0;
+        document.getElementById('article-rating').textContent = 
+            article.rating ? parseFloat(article.rating).toFixed(1) : '0.0';
+        document.getElementById('article-rating-count').textContent = article.rating_count || 0;
+        
+        // Update category
+        if (article.kategori_nama || article.category_name) {
+            document.getElementById('article-category').textContent = 
+                article.kategori_nama || article.category_name;
+        }
+        
+        // Update tags
+        if (article.tags) {
+            const tags = Array.isArray(article.tags) ? article.tags : 
+                        (typeof article.tags === 'string' ? article.tags.split(',') : []);
+            const tagsContainer = document.getElementById('article-tags');
+            tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.textContent = tag.trim();
+                tagsContainer.appendChild(span);
+            });
+        }
+        
+        // Update content
+        const content = article.konten || article.content || '<p>Konten artikel tidak tersedia.</p>';
+        document.getElementById('article-content').innerHTML = content;
+        
+        // Display solution steps if available
+        if (article.langkahPenyelesaian) {
+            const stepsContainer = document.getElementById('solution-steps');
+            let stepsHTML = '<h2>Langkah-langkah Penyelesaian</h2>';
+            
+            if (Array.isArray(article.langkahPenyelesaian)) {
                 article.langkahPenyelesaian.forEach((step, index) => {
                     stepsHTML += `
                         <div class="step">
                             <span class="step-number">${index + 1}</span>
-                            <h3>${step.judul}</h3>
-                            <p>${step.deskripsi}</p>
+                            <h3>${step.judul || `Langkah ${index + 1}`}</h3>
+                            <p>${step.deskripsi || step.description || ''}</p>
                         </div>
                     `;
                 });
@@ -420,311 +441,372 @@
                 stepsContainer.innerHTML = stepsHTML;
             }
         }
-        
-        // Load related articles
-        async function loadRelatedArticles(currentId) {
-            try {
-                // For now, load recent articles as related
-                const response = await fetch(`${API_BASE_URL}/articles?limit=3`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Filter out current article
-                    const related = result.data.filter(article => article.id != currentId);
-                    displayRelatedArticles(related.slice(0, 3));
-                }
-            } catch (error) {
-                console.error('Error loading related articles:', error);
+    }
+    
+    // Load related articles
+    async function loadRelatedArticles(currentId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/articles?limit=6`);
+            const result = await response.json();
+            
+            if (result.success) {
+                // Filter out current article
+                const related = result.data.filter(article => article.id != currentId);
+                displayRelatedArticles(related.slice(0, 3));
             }
+        } catch (error) {
+            console.error('Error loading related articles:', error);
+            // Use fallback articles
+            displayRelatedArticles(getFallbackArticles().filter(a => a.id != currentId).slice(0, 3));
+        }
+    }
+    
+    // Display related articles
+    function displayRelatedArticles(articles) {
+        const container = document.getElementById('related-articles');
+        
+        if (!articles || articles.length === 0) {
+            container.innerHTML = '<p>Tidak ada artikel terkait.</p>';
+            return;
         }
         
-        // Display related articles
-        function displayRelatedArticles(articles) {
-            const container = document.getElementById('related-articles');
+        let html = '';
+        articles.forEach(article => {
+            const judul = article.judul || article.title;
+            const tipe = article.tipe || article.category_name || 'Panduan';
+            const id = article.id;
             
-            if (!articles || articles.length === 0) {
-                container.innerHTML = '<p>Tidak ada artikel terkait.</p>';
+            html += `
+                <div class="article-card">
+                    <div class="article-image">
+                        <i class="fas fa-question-circle fa-3x"></i>
+                    </div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="article-category">${tipe}</span>
+                        </div>
+                        <h3>${judul}</h3>
+                        <div class="article-stats">
+                            <a href="article.html?id=${id}" class="btn-primary" style="padding: 5px 15px; font-size: 0.8rem;">Baca</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    // Setup event listeners
+    function setupEventListeners() {
+        // Rate article button
+        document.getElementById('rate-article-btn').addEventListener('click', () => {
+            if (!authToken) {
+                window.location.href = 'auth.html?mode=login';
                 return;
             }
             
-            let html = '';
-            articles.forEach(article => {
-                html += `
-                    <div class="article-card">
-                        <div class="article-image">
-                            <i class="fas fa-question-circle fa-3x"></i>
-                        </div>
-                        <div class="article-content">
-                            <div class="article-meta">
-                                <span class="article-category">${article.tipe || 'Panduan'}</span>
-                            </div>
-                            <h3>${article.judul}</h3>
-                            <div class="article-stats">
-                                <a href="article.html?id=${article.id}" class="btn-primary" style="padding: 5px 15px; font-size: 0.8rem;">Baca</a>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
+            document.getElementById('rating-section').style.display = 'block';
+            setupStarRating();
+        });
         
-        // Setup event listeners
-        function setupEventListeners() {
-            // Rate article button
-            document.getElementById('rate-article-btn').addEventListener('click', () => {
-                if (!authToken) {
-                    window.location.href = 'auth.html?mode=login';
-                    return;
-                }
-                
-                document.getElementById('rating-section').style.display = 'block';
-                setupStarRating();
-            });
-            
-            // Print button
-            document.getElementById('print-article-btn').addEventListener('click', () => {
-                window.print();
-            });
-            
-            // Share button
-            document.getElementById('share-article-btn').addEventListener('click', () => {
-                if (navigator.share) {
-                    navigator.share({
-                        title: document.getElementById('article-title').textContent,
-                        text: 'Lihat solusi masalah di PT. Helpy',
-                        url: window.location.href
-                    });
-                } else {
-                    // Fallback: Copy to clipboard
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('Link artikel telah disalin ke clipboard!');
-                }
-            });
-        }
+        // Print button
+        document.getElementById('print-article-btn').addEventListener('click', () => {
+            window.print();
+        });
         
-        // Setup star rating
-        function setupStarRating() {
-            const stars = document.querySelectorAll('.star');
-            let selectedRating = 0;
-            
-            stars.forEach(star => {
-                star.addEventListener('mouseover', (e) => {
-                    const rating = parseInt(e.target.getAttribute('data-rating'));
-                    highlightStars(rating);
+        // Share button
+        document.getElementById('share-article-btn').addEventListener('click', () => {
+            if (navigator.share) {
+                navigator.share({
+                    title: document.getElementById('article-title').textContent,
+                    text: 'Lihat solusi masalah di PT. Helpy',
+                    url: window.location.href
                 });
-                
-                star.addEventListener('click', (e) => {
-                    selectedRating = parseInt(e.target.getAttribute('data-rating'));
-                    highlightStars(selectedRating);
-                });
+            } else {
+                // Fallback: Copy to clipboard
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link artikel telah disalin ke clipboard!');
+            }
+        });
+    }
+    
+    // Setup star rating
+    function setupStarRating() {
+        const stars = document.querySelectorAll('.star');
+        let selectedRating = 0;
+        
+        stars.forEach(star => {
+            star.addEventListener('mouseover', (e) => {
+                const rating = parseInt(e.target.getAttribute('data-rating'));
+                highlightStars(rating);
             });
             
-            // Reset stars when mouse leaves
-            document.querySelector('.rating-stars').addEventListener('mouseleave', () => {
+            star.addEventListener('click', (e) => {
+                selectedRating = parseInt(e.target.getAttribute('data-rating'));
                 highlightStars(selectedRating);
             });
-            
-            // Submit rating
-            document.getElementById('submit-rating-btn').addEventListener('click', async () => {
-                if (selectedRating === 0) {
-                    alert('Pilih rating terlebih dahulu!');
-                    return;
-                }
-                
-                try {
-                    const response = await fetch(`${API_BASE_URL}/articles/${articleId}/rate`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${authToken}`
-                        },
-                        body: JSON.stringify({ rating: selectedRating })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        alert('Terima kasih atas rating Anda!');
-                        document.getElementById('rating-section').style.display = 'none';
-                        
-                        // Update displayed rating
-                        document.getElementById('article-rating').textContent = 
-                            parseFloat(result.data.rating).toFixed(1);
-                        document.getElementById('article-rating-count').textContent = result.data.ratingCount;
-                    } else {
-                        alert(result.message || 'Gagal menyimpan rating');
-                    }
-                } catch (error) {
-                    console.error('Error submitting rating:', error);
-                    alert('Terjadi kesalahan saat menyimpan rating');
-                }
-            });
-        }
+        });
         
-        // Highlight stars based on rating
-        function highlightStars(rating) {
-            const stars = document.querySelectorAll('.star');
+        // Reset stars when mouse leaves
+        document.querySelector('.rating-stars').addEventListener('mouseleave', () => {
+            highlightStars(selectedRating);
+        });
+        
+        // Submit rating
+        document.getElementById('submit-rating-btn').addEventListener('click', async () => {
+            if (selectedRating === 0) {
+                alert('Pilih rating terlebih dahulu!');
+                return;
+            }
             
-            stars.forEach((star, index) => {
-                if (index < rating) {
-                    star.classList.add('active');
+            if (!authToken) {
+                alert('Silakan login terlebih dahulu!');
+                window.location.href = 'auth.html?mode=login';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/articles/${articleId}/rate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ rating: selectedRating })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Terima kasih atas rating Anda!');
+                    document.getElementById('rating-section').style.display = 'none';
+                    
+                    // Update displayed rating
+                    document.getElementById('article-rating').textContent = 
+                        parseFloat(result.data.rating).toFixed(1);
+                    document.getElementById('article-rating-count').textContent = result.data.ratingCount;
                 } else {
-                    star.classList.remove('active');
+                    alert(result.message || 'Gagal menyimpan rating');
                 }
+            } catch (error) {
+                console.error('Error submitting rating:', error);
+                alert('Terjadi kesalahan saat menyimpan rating');
+            }
+        });
+    }
+    
+    // Highlight stars based on rating
+    function highlightStars(rating) {
+        const stars = document.querySelectorAll('.star');
+        
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+    
+    // Check authentication status
+    function checkAuthStatus() {
+        const userActions = document.getElementById('user-actions');
+        
+        if (authToken && currentUser) {
+            // User is logged in
+            userActions.innerHTML = `
+                <div id="user-menu">
+                    <div class="user-profile" id="user-profile-dropdown">
+                        <img id="user-avatar" src="${currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.nama)}&background=4A6FA5&color=fff`}" alt="Avatar">
+                        <span id="user-name">${currentUser.nama}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        ${currentUser.role === 'admin' ? 
+                            '<a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>' : 
+                            '<a href="profile.html"><i class="fas fa-user"></i> Profil Saya</a>'
+                        }
+                        <a href="articles.html"><i class="fas fa-newspaper"></i> Artikel</a>
+                        <hr>
+                        <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            `;
+            
+            // Setup user dropdown
+            setTimeout(() => {
+                setupUserDropdown();
+            }, 100);
+        } else {
+            // User is not logged in
+            userActions.innerHTML = `
+                <div id="auth-buttons">
+                    <a href="auth.html?mode=login" class="btn-outline">Login</a>
+                    <a href="auth.html?mode=register" class="btn-primary">Register</a>
+                </div>
+            `;
+        }
+    }
+    
+    // Setup user dropdown
+    function setupUserDropdown() {
+        const userProfile = document.getElementById('user-profile-dropdown');
+        const dropdown = document.querySelector('.dropdown-menu');
+        
+        if (userProfile && dropdown) {
+            userProfile.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Logout button
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                dropdown.style.display = 'none';
             });
         }
+    }
+    
+    // Setup mobile menu
+    function setupMobileMenu() {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
         
-        // Check authentication status
-        function checkAuthStatus() {
-            const userActions = document.getElementById('user-actions');
-            
-            if (authToken) {
-                // User is logged in
-                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                
-                userActions.innerHTML = `
-                    <div id="user-menu">
-                        <div class="user-profile" id="user-profile-dropdown">
-                            <img id="user-avatar" src="${currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.nama)}&background=4A6FA5&color=fff`}" alt="Avatar">
-                            <span id="user-name">${currentUser.nama}</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="dropdown-menu">
-                            <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-                            <a href="create-article.html"><i class="fas fa-plus-circle"></i> Buat Artikel</a>
-                            <a href="#profile"><i class="fas fa-user"></i> Profil Saya</a>
-                            <hr>
-                            <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                        </div>
-                    </div>
-                `;
-                
-                // Setup user dropdown
-                setTimeout(() => {
-                    setupUserDropdown();
-                }, 100);
-            } else {
-                // User is not logged in
-                userActions.innerHTML = `
-                    <div id="auth-buttons">
-                        <a href="auth.html?mode=login" class="btn-outline">Login</a>
-                        <a href="auth.html?mode=register" class="btn-primary">Register</a>
-                    </div>
-                `;
-            }
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
         }
-        
-        // Setup user dropdown
-        function setupUserDropdown() {
-            const userProfile = document.getElementById('user-profile-dropdown');
-            const dropdown = document.querySelector('.dropdown-menu');
-            
-            if (userProfile && dropdown) {
-                userProfile.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-                });
-                
-                // Logout button
-                document.getElementById('logout-btn').addEventListener('click', logout);
-                
-                // Close dropdown when clicking outside
-                document.addEventListener('click', () => {
-                    dropdown.style.display = 'none';
+    }
+    
+    // Logout function
+    async function logout() {
+        try {
+            if (authToken && authToken !== 'demo_token') {
+                await fetch(`${API_BASE_URL}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
                 });
             }
-        }
-        
-        // Setup mobile menu
-        function setupMobileMenu() {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const navLinks = document.querySelector('.nav-links');
-            
-            if (menuToggle) {
-                menuToggle.addEventListener('click', () => {
-                    navLinks.classList.toggle('active');
-                });
-            }
-        }
-        
-        // Logout function
-        function logout() {
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
             localStorage.removeItem('authToken');
             localStorage.removeItem('currentUser');
             window.location.href = 'index.html';
         }
+    }
+    
+    // Format date helper
+    function formatDate(dateString) {
+        if (!dateString) return 'Tanggal tidak tersedia';
         
-        // Format date helper
-        function formatDate(dateString) {
-            if (!dateString) return 'Tanggal tidak tersedia';
-            
+        try {
             const date = new Date(dateString);
             return date.toLocaleDateString('id-ID', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric'
             });
+        } catch (error) {
+            return 'Tanggal tidak tersedia';
         }
-        
-        // Error handler
-        function showError(message) {
-            const articleDetail = document.querySelector('.article-detail');
-            articleDetail.innerHTML = `
-                <div style="text-align: center; padding: 50px 20px;">
-                    <i class="fas fa-exclamation-triangle fa-3x" style="color: var(--danger-color); margin-bottom: 20px;"></i>
-                    <h2 style="color: var(--danger-color); margin-bottom: 15px;">Terjadi Kesalahan</h2>
-                    <p style="color: var(--gray-medium); margin-bottom: 30px;">${message}</p>
-                    <a href="index.html" class="btn-primary">Kembali ke Beranda</a>
-                </div>
-            `;
-        }
-        
-        // Fallback article data
-        function getFallbackArticle() {
-            return {
-                id: 1,
-                judul: 'Cara Mengatasi Printer Tidak Terdeteksi',
-                konten: `
-                    <h2>Masalah Printer Tidak Terdeteksi</h2>
-                    <p>Printer yang tidak terdeteksi oleh komputer adalah masalah umum yang sering terjadi di lingkungan kerja. Masalah ini bisa disebabkan oleh berbagai faktor, termasuk masalah koneksi, driver, atau pengaturan sistem.</p>
-                    
-                    <h2>Penyebab Umum</h2>
-                    <ul>
-                        <li>Kabel USB tidak terhubung dengan baik</li>
-                        <li>Driver printer tidak terinstal atau rusak</li>
-                        <li>Printer dalam status offline</li>
-                        <li>Masalah pada port USB komputer</li>
-                        <li>Firewall atau antivirus memblokir koneksi</li>
-                    </ul>
-                `,
-                created_at: '2024-01-15T10:30:00',
-                author_nama: 'Admin IT',
+    }
+    
+    // Error handler
+    function showError(message) {
+        const articleDetail = document.querySelector('.article-detail');
+        articleDetail.innerHTML = `
+            <div style="text-align: center; padding: 50px 20px;">
+                <i class="fas fa-exclamation-triangle fa-3x" style="color: var(--danger-color); margin-bottom: 20px;"></i>
+                <h2 style="color: var(--danger-color); margin-bottom: 15px;">Terjadi Kesalahan</h2>
+                <p style="color: var(--gray-medium); margin-bottom: 30px;">${message}</p>
+                <a href="index.html" class="btn-primary">Kembali ke Beranda</a>
+            </div>
+        `;
+    }
+    
+    // Fallback article data
+    function getFallbackArticle() {
+        return {
+            id: 1,
+            judul: 'Cara Mengatasi Printer Tidak Terdeteksi',
+            konten: `
+                <h2>Masalah Printer Tidak Terdeteksi</h2>
+                <p>Printer yang tidak terdeteksi oleh komputer adalah masalah umum yang sering terjadi di lingkungan kerja. Masalah ini bisa disebabkan oleh berbagai faktor, termasuk masalah koneksi, driver, atau pengaturan sistem.</p>
+                
+                <h2>Penyebab Umum</h2>
+                <ul>
+                    <li>Kabel USB tidak terhubung dengan baik</li>
+                    <li>Driver printer tidak terinstal atau rusak</li>
+                    <li>Printer dalam status offline</li>
+                    <li>Masalah pada port USB komputer</li>
+                    <li>Firewall atau antivirus memblokir koneksi</li>
+                </ul>
+            `,
+            created_at: '2024-01-15T10:30:00',
+            author_nama: 'Admin IT',
+            views: 156,
+            rating: 4.5,
+            rating_count: 12,
+            kategori_nama: 'IT & Teknologi',
+            tags: ['printer', 'troubleshooting', 'hardware'],
+            langkahPenyelesaian: [
+                {
+                    judul: 'Periksa Koneksi Kabel',
+                    deskripsi: 'Pastikan kabel USB printer terhubung dengan baik ke komputer dan printer. Coba cabut dan pasang kembali kabel di kedua ujung.'
+                },
+                {
+                    judul: 'Restart Printer dan Komputer',
+                    deskripsi: 'Matikan printer dan komputer, tunggu 30 detik, kemudian nyalakan kembali. Langkah ini sering menyelesaikan masalah deteksi.'
+                },
+                {
+                    judul: 'Cek Status Printer',
+                    deskripsi: 'Buka Control Panel > Devices and Printers. Pastikan printer tidak dalam status offline. Klik kanan printer dan pilih "See what\'s printing" untuk melihat status.'
+                }
+            ]
+        };
+    }
+    
+    function getFallbackArticles() {
+        return [
+            { 
+                id: 1, 
+                judul: 'Cara Mengatasi Printer Tidak Terdeteksi', 
+                excerpt: 'Langkah-langkah troubleshooting printer yang tidak terdeteksi oleh sistem.',
+                tipe: 'Troubleshooting',
+                created_at: '2024-01-15',
                 views: 156,
-                rating: 4.5,
-                rating_count: 12,
-                kategori: [{ nama: 'IT & Teknologi' }],
-                tags: ['printer', 'troubleshooting', 'hardware'],
-                langkahPenyelesaian: [
-                    {
-                        judul: 'Periksa Koneksi Kabel',
-                        deskripsi: 'Pastikan kabel USB printer terhubung dengan baik ke komputer dan printer. Coba cabut dan pasang kembali kabel di kedua ujung.'
-                    },
-                    {
-                        judul: 'Restart Printer dan Komputer',
-                        deskripsi: 'Matikan printer dan komputer, tunggu 30 detik, kemudian nyalakan kembali. Langkah ini sering menyelesaikan masalah deteksi.'
-                    },
-                    {
-                        judul: 'Cek Status Printer',
-                        deskripsi: 'Buka Control Panel > Devices and Printers. Pastikan printer tidak dalam status offline. Klik kanan printer dan pilih "See what\'s printing" untuk melihat status.'
-                    }
-                ]
-            };
-        }
-        
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', initArticlePage);
-    </script>
+                rating: 4.5
+            },
+            { 
+                id: 2, 
+                judul: 'Panduan Penggunaan Sistem Absensi Online', 
+                excerpt: 'Cara menggunakan sistem absensi online perusahaan dengan benar.',
+                tipe: 'Panduan',
+                created_at: '2024-01-10',
+                views: 203,
+                rating: 4.8
+            },
+            { 
+                id: 3, 
+                judul: 'Solusi Email Tidak Bisa Mengirim Attachment', 
+                excerpt: 'Mengatasi masalah email yang tidak bisa mengirimkan lampiran file.',
+                tipe: 'Troubleshooting',
+                created_at: '2024-01-05',
+                views: 98,
+                rating: 4.2
+            }
+        ];
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', initArticlePage);
+</script>
 </body>
 </html>

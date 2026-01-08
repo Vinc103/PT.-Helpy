@@ -358,226 +358,271 @@
         <div class="overlay"></div>
     </div>
 
-    <script>
-        // API Base URL
-        const API_BASE_URL = 'http://localhost:3000/api';
-        const authToken = localStorage.getItem('authToken');
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+   <script>
+    // API Base URL
+    const API_BASE_URL = 'http://localhost:3000/api';
+    const authToken = localStorage.getItem('authToken');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    
+    // Check authentication
+    if (!authToken || !currentUser) {
+        window.location.href = 'auth.html?mode=login';
+    }
+    
+    // Check if user is admin
+    if (currentUser.role !== 'admin') {
+        alert('Anda tidak memiliki akses admin');
+        window.location.href = 'index.html';
+    }
+    
+    // Initialize dashboard
+    async function initDashboard() {
+        // Load user info
+        document.getElementById('admin-name').textContent = currentUser.nama;
         
-        // Check authentication
-        if (!authToken || !currentUser) {
-            window.location.href = 'auth.html?mode=login';
-        }
-        
-        // Initialize dashboard
-        async function initDashboard() {
-            // Load user info
-            document.getElementById('admin-name').textContent = currentUser.nama;
-            
-            // Load dashboard stats
-            await loadDashboardStats();
-            
-            // Load recent articles
-            await loadRecentArticles();
-            
-            // Setup event listeners
-            setupEventListeners();
-            
-            // Setup mobile menu
-            setupMobileMenu();
-        }
-        
-        // Load dashboard statistics
-        async function loadDashboardStats() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/articles/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('total-articles').textContent = result.data.total_articles || 0;
-                    document.getElementById('total-views').textContent = result.data.total_views || 0;
-                    document.getElementById('avg-rating').textContent = 
-                        result.data.avg_rating ? parseFloat(result.data.avg_rating).toFixed(1) : '0.0';
-                        
-                    // Get user count (need to implement this API endpoint)
-                    loadUserCount();
-                }
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
-        
-        // Load user count
-        async function loadUserCount() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/users`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('total-users').textContent = result.pagination?.total || result.data?.length || 0;
-                }
-            } catch (error) {
-                console.error('Error loading users:', error);
-            }
-        }
+        // Load dashboard stats
+        await loadDashboardStats();
         
         // Load recent articles
-        async function loadRecentArticles() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/articles?limit=5`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    displayRecentArticles(result.data);
-                }
-            } catch (error) {
-                console.error('Error loading recent articles:', error);
-                displayRecentArticles(getFallbackArticles().slice(0, 5));
-            }
-        }
+        await loadRecentArticles();
         
-        // Display recent articles
-        function displayRecentArticles(articles) {
-            const container = document.getElementById('recent-articles-body');
-            
-            if (!articles || articles.length === 0) {
-                container.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--gray-medium);">
-                            Belum ada artikel tersedia.
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            let html = '';
-            articles.forEach(article => {
-                const kategori = article.kategori_nama ? article.kategori_nama.split(',')[0] : 'Umum';
-                
-                html += `
-                    <tr>
-                        <td style="font-weight: 500;">${article.judul}</td>
-                        <td>${kategori}</td>
-                        <td>
-                            <span class="status-badge status-${article.status || 'draft'}">
-                                ${article.status === 'published' ? 'Published' : 'Draft'}
-                            </span>
-                        </td>
-                        <td>${article.views || 0}</td>
-                        <td>${formatDate(article.created_at)}</td>
-                        <td>
-                            <a href="article.html?id=${article.id}" class="btn-outline btn-sm">Lihat</a>
-                        </td>
-                    </tr>
-                `;
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Setup mobile menu
+        setupMobileMenu();
+    }
+    
+    // Load dashboard statistics
+    async function loadDashboardStats() {
+        try {
+            // Get articles stats
+            const articlesResponse = await fetch(`${API_BASE_URL}/articles`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
             });
             
-            container.innerHTML = html;
+            const articlesResult = await articlesResponse.json();
+            
+            if (articlesResult.success) {
+                const articles = articlesResult.data || [];
+                document.getElementById('total-articles').textContent = articles.length;
+                
+                // Calculate total views
+                const totalViews = articles.reduce((sum, article) => sum + (article.views || 0), 0);
+                document.getElementById('total-views').textContent = totalViews;
+                
+                // Calculate average rating
+                const ratings = articles.filter(a => a.rating).map(a => a.rating);
+                const avgRating = ratings.length > 0 ? 
+                    (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : '0.0';
+                document.getElementById('avg-rating').textContent = avgRating;
+            }
+            
+            // Get user count
+            await loadUserCount();
+            
+        } catch (error) {
+            console.error('Error loading stats:', error);
+            // Use fallback data
+            document.getElementById('total-articles').textContent = '12';
+            document.getElementById('total-views').textContent = '1,234';
+            document.getElementById('total-users').textContent = '50';
+            document.getElementById('avg-rating').textContent = '4.5';
+        }
+    }
+    
+    // Load user count
+    async function loadUserCount() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/users`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                const users = result.data || [];
+                document.getElementById('total-users').textContent = users.length;
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            document.getElementById('total-users').textContent = '50';
+        }
+    }
+    
+    // Load recent articles
+    async function loadRecentArticles() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/articles?limit=5`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                displayRecentArticles(result.data);
+            } else {
+                displayRecentArticles(getFallbackArticles().slice(0, 5));
+            }
+        } catch (error) {
+            console.error('Error loading recent articles:', error);
+            displayRecentArticles(getFallbackArticles().slice(0, 5));
+        }
+    }
+    
+    // Display recent articles
+    function displayRecentArticles(articles) {
+        const container = document.getElementById('recent-articles-body');
+        
+        if (!articles || articles.length === 0) {
+            container.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 30px; color: var(--gray-medium);">
+                        Belum ada artikel tersedia.
+                    </td>
+                </tr>
+            `;
+            return;
         }
         
-        // Format date helper
-        function formatDate(dateString) {
-            if (!dateString) return '-';
+        let html = '';
+        articles.forEach(article => {
+            const kategori = article.kategori_nama || article.category_name || 'Umum';
+            const status = article.status || 'published';
+            const views = article.views || article.view_count || 0;
             
+            html += `
+                <tr>
+                    <td style="font-weight: 500;">${article.judul || article.title}</td>
+                    <td>${kategori}</td>
+                    <td>
+                        <span class="status-badge ${status === 'published' ? 'status-published' : 'status-draft'}">
+                            ${status === 'published' ? 'Published' : 'Draft'}
+                        </span>
+                    </td>
+                    <td>${views}</td>
+                    <td>${formatDate(article.created_at || article.created_date)}</td>
+                    <td>
+                        <a href="article.html?id=${article.id}" class="btn-outline btn-sm">Lihat</a>
+                        <a href="edit-article.html?id=${article.id}" class="btn-outline btn-sm" style="margin-left: 5px;">Edit</a>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    // Format date helper
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        
+        try {
             const date = new Date(dateString);
             return date.toLocaleDateString('id-ID', {
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric'
             });
+        } catch (error) {
+            return '-';
+        }
+    }
+    
+    // Setup event listeners
+    function setupEventListeners() {
+        // Logout buttons
+        document.getElementById('logout-sidebar').addEventListener('click', logout);
+        
+        // Add logout button to main area if needed
+        const mainLogoutBtn = document.createElement('button');
+        mainLogoutBtn.className = 'btn-outline';
+        mainLogoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+        mainLogoutBtn.style.marginLeft = '20px';
+        mainLogoutBtn.addEventListener('click', logout);
+        
+        document.querySelector('.dashboard-header').appendChild(mainLogoutBtn);
+    }
+    
+    // Setup mobile menu
+    function setupMobileMenu() {
+        const menuToggle = document.querySelector('.mobile-menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.overlay');
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
         }
         
-        // Setup event listeners
-        function setupEventListeners() {
-            // Logout buttons
-            document.getElementById('logout-sidebar').addEventListener('click', logout);
-            
-            // Add logout button to main area if needed
-            const mainLogoutBtn = document.createElement('button');
-            mainLogoutBtn.className = 'btn-outline';
-            mainLogoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
-            mainLogoutBtn.style.marginLeft = '20px';
-            mainLogoutBtn.addEventListener('click', logout);
-            
-            document.querySelector('.dashboard-header').appendChild(mainLogoutBtn);
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
         }
-        
-        // Setup mobile menu
-        function setupMobileMenu() {
-            const menuToggle = document.querySelector('.mobile-menu-toggle');
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.overlay');
-            
-            if (menuToggle) {
-                menuToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('active');
-                    overlay.classList.toggle('active');
+    }
+    
+    // Logout function
+    async function logout() {
+        try {
+            if (authToken && authToken !== 'demo_token') {
+                await fetch(`${API_BASE_URL}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
                 });
             }
-            
-            if (overlay) {
-                overlay.addEventListener('click', () => {
-                    sidebar.classList.remove('active');
-                    overlay.classList.remove('active');
-                });
-            }
-        }
-        
-        // Logout function
-        function logout() {
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
             localStorage.removeItem('authToken');
             localStorage.removeItem('currentUser');
             window.location.href = 'index.html';
         }
-        
-        // Fallback data
-        function getFallbackArticles() {
-            return [
-                { 
-                    id: 1, 
-                    judul: 'Cara Mengatasi Printer Tidak Terdeteksi', 
-                    status: 'published',
-                    created_at: '2024-01-15',
-                    views: 156,
-                    kategori_nama: 'IT & Teknologi'
-                },
-                { 
-                    id: 2, 
-                    judul: 'Panduan Penggunaan Sistem Absensi Online', 
-                    status: 'published',
-                    created_at: '2024-01-10',
-                    views: 203,
-                    kategori_nama: 'HRD & Personalia'
-                },
-                { 
-                    id: 3, 
-                    judul: 'Solusi Email Tidak Bisa Mengirim Attachment', 
-                    status: 'draft',
-                    created_at: '2024-01-05',
-                    views: 98,
-                    kategori_nama: 'IT & Teknologi'
-                }
-            ];
-        }
-        
-        // Initialize dashboard on page load
-        document.addEventListener('DOMContentLoaded', initDashboard);
-    </script>
+    }
+    
+    // Fallback data
+    function getFallbackArticles() {
+        return [
+            { 
+                id: 1, 
+                judul: 'Cara Mengatasi Printer Tidak Terdeteksi', 
+                status: 'published',
+                created_at: '2024-01-15',
+                views: 156,
+                kategori_nama: 'IT & Teknologi'
+            },
+            { 
+                id: 2, 
+                judul: 'Panduan Penggunaan Sistem Absensi Online', 
+                status: 'published',
+                created_at: '2024-01-10',
+                views: 203,
+                kategori_nama: 'HRD & Personalia'
+            },
+            { 
+                id: 3, 
+                judul: 'Solusi Email Tidak Bisa Mengirim Attachment', 
+                status: 'draft',
+                created_at: '2024-01-05',
+                views: 98,
+                kategori_nama: 'IT & Teknologi'
+            }
+        ];
+    }
+    
+    // Initialize dashboard on page load
+    document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
 </body>
 </html>

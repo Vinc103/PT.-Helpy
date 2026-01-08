@@ -24,7 +24,7 @@ const mysql = require("mysql2/promise");
 
     await connection.execute(
       `INSERT IGNORE INTO users (id, nama, email, password, role)
-       VALUES (1, 'Admin Wiki', 'admin@whelper.com', ?, 'admin')`,
+       VALUES (1, 'Admin Wiki', 'admin@helper.com', ?, 'admin')`,
       [hashedPassword]
     );
 

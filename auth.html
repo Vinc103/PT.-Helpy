@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        /* Styles tetap sama */
         .auth-container {
             min-height: 100vh;
             display: flex;
@@ -166,12 +167,12 @@
                 <form id="login-form" class="auth-form active">
                     <div class="form-group">
                         <label for="login-email">Email</label>
-                        <input type="email" id="login-email" placeholder="email@perusahaan.com" required>
+                        <input type="email" id="login-email" placeholder="Example@gmail.com" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="login-password">Password</label>
-                        <input type="password" id="login-password" placeholder="Masukkan password" required>
+                        <input type="password" id="login-password" placeholder="Password" required>
                     </div>
                     
                     <button type="submit" class="btn-primary" style="width: 100%; padding: 15px;">
@@ -180,6 +181,9 @@
                     
                     <div class="auth-footer">
                         <p>Belum punya akun? <a href="#" class="switch-to-register">Daftar disini</a></p>
+                        <p style="margin-top: 10px; font-size: 0.9rem;">
+                            <strong>Demo:</strong> example@gmail.com / Password
+                        </p>
                     </div>
                 </form>
                 
@@ -244,6 +248,13 @@
         
         // Initialize auth page
         function initAuthPage() {
+            // Check if already logged in
+            const authToken = localStorage.getItem('authToken');
+            if (authToken) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
             // Setup tab switching
             setupTabs();
             
@@ -338,23 +349,56 @@
                     
                     const result = await response.json();
                     
-                    if (result.success) {
-                        // Save token and user data
-                        localStorage.setItem('authToken', result.data.token);
-                        localStorage.setItem('currentUser', JSON.stringify(result.data.user));
-                        
-                        showSuccess('Login berhasil! Mengalihkan...');
-                        
-                        // Redirect to home page after 1 second
-                        setTimeout(() => {
+                // After successful login
+                if (result.success) {
+                    // Save token and user data
+                    localStorage.setItem('authToken', result.data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(result.data.user));
+                    
+                    showSuccess('Login berhasil! Mengalihkan...');
+                    
+                    // Check server health before redirect
+                    try {
+                        const healthResponse = await fetch('http://localhost:3000/health');
+                        const healthData = await healthResponse.json();
+                        console.log('Server health:', healthData);
+                    } catch (healthError) {
+                        console.warn('Health check failed:', healthError);
+                    }
+                    
+                    // Redirect based on user role
+                    setTimeout(() => {
+                        if (result.data.user.role === 'admin') {
+                            window.location.href = 'dashboard.html';
+                        } else {
                             window.location.href = 'index.html';
-                        }, 1000);
-                    } else {
+                        }
+                    }, 1000);
+                }else {
                         showError(result.message || 'Login gagal');
                     }
                 } catch (error) {
                     console.error('Login error:', error);
-                    showError('Terjadi kesalahan. Silakan coba lagi.');
+                    
+                    // Try using demo credentials if server is down
+                    if (email === 'admin@helper.com' && password === 'admin123') {
+                        showSuccess('Login demo berhasil! Server offline.');
+                        const demoUser = {
+                            id: 1,
+                            nama: 'Admin Demo',
+                            email: 'admin@helper.com',
+                            role: 'admin',
+                            departemen: 'IT'
+                        };
+                        localStorage.setItem('authToken', 'demo_token');
+                        localStorage.setItem('currentUser', JSON.stringify(demoUser));
+                        
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    } else {
+                        showError('Terjadi kesalahan. Silakan coba lagi.');
+                    }
                 }
             });
             
@@ -408,7 +452,7 @@
                     }
                 } catch (error) {
                     console.error('Register error:', error);
-                    showError('Terjadi kesalahan. Silakan coba lagi.');
+                    showError('Server sedang offline. Silakan coba lagi nanti.');
                 }
             });
         }
@@ -435,6 +479,11 @@
             
             // Hide error message if showing
             document.getElementById('error-message').style.display = 'none';
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
         }
         
         // Initialize on page load

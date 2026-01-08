@@ -52,6 +52,8 @@ async function loadCategories() {
         if (result.success) {
             displayCategories(result.data);
             displayFooterCategories(result.data.slice(0, 5));
+        } else {
+            displayCategories(getFallbackCategories());
         }
     } catch (error) {
         console.error('Error loading categories:', error);
@@ -71,12 +73,12 @@ function displayCategories(categories) {
                 <div class="category-icon">
                     <i class="fas ${category.icon || 'fa-folder'}"></i>
                 </div>
-                <h3>${category.nama}</h3>
-                <p>${category.deskripsi || 'Solusi untuk masalah terkait kategori ini'}</p>
+                <h3>${category.nama || category.name}</h3>
+                <p>${category.deskripsi || category.description || 'Solusi untuk masalah terkait kategori ini'}</p>
                 <div class="category-stats">
-                    <span><i class="fas fa-file-alt"></i> ${category.article_count || 12} Artikel</span>
+                    <span><i class="fas fa-file-alt"></i> ${category.article_count || category.total_articles || 12} Artikel</span>
                 </div>
-                <a href="#" class="btn-outline" style="margin-top: 15px;" onclick="viewCategory('${category.slug}')">Lihat Solusi</a>
+                <a href="#" class="btn-outline" style="margin-top: 15px;" onclick="viewCategory('${category.id}')">Lihat Solusi</a>
             </div>
         `;
     });
@@ -90,7 +92,7 @@ function displayFooterCategories(categories) {
     
     let html = '';
     categories.forEach(category => {
-        html += `<li><a href="#" onclick="viewCategory('${category.slug}')">${category.nama}</a></li>`;
+        html += `<li><a href="#" onclick="viewCategory('${category.id}')">${category.nama || category.name}</a></li>`;
     });
     
     container.innerHTML = html;
@@ -104,6 +106,8 @@ async function loadArticles() {
         
         if (result.success) {
             displayArticles(result.data, 'articles-list');
+        } else {
+            displayArticles(getFallbackArticles(), 'articles-list');
         }
     } catch (error) {
         console.error('Error loading articles:', error);
@@ -119,6 +123,8 @@ async function loadPopularArticles() {
         
         if (result.success) {
             displayArticles(result.data, 'popular-articles-list');
+        } else {
+            displayArticles(getFallbackArticles().slice(0, 3), 'popular-articles-list');
         }
     } catch (error) {
         console.error('Error loading popular articles:', error);
@@ -137,6 +143,15 @@ function displayArticles(articles, containerId) {
     
     let html = '';
     articles.forEach(article => {
+        // Handle both API response and fallback data
+        const judul = article.judul || article.title;
+        const excerpt = article.excerpt || article.konten_ringkas || 'Artikel troubleshooting untuk masalah perusahaan...';
+        const tipe = article.tipe || article.category_name || 'Panduan';
+        const created_at = article.created_at || article.created_date;
+        const views = article.views || article.view_count || 0;
+        const rating = article.rating || article.average_rating || 0;
+        const id = article.id;
+        
         html += `
             <div class="article-card">
                 <div class="article-image">
@@ -144,17 +159,17 @@ function displayArticles(articles, containerId) {
                 </div>
                 <div class="article-content">
                     <div class="article-meta">
-                        <span class="article-category">${article.tipe || 'Panduan'}</span>
-                        <span class="article-date">${formatDate(article.created_at)}</span>
+                        <span class="article-category">${tipe}</span>
+                        <span class="article-date">${formatDate(created_at)}</span>
                     </div>
-                    <h3>${article.judul}</h3>
-                    <p>${article.excerpt || 'Artikel troubleshooting untuk masalah perusahaan...'}</p>
+                    <h3>${judul}</h3>
+                    <p>${excerpt.substring(0, 100)}...</p>
                     <div class="article-stats">
-                        <span><i class="fas fa-eye"></i> ${article.views || 0}</span>
+                        <span><i class="fas fa-eye"></i> ${views}</span>
                         <span class="article-rating">
-                            <i class="fas fa-star"></i> ${article.rating ? parseFloat(article.rating).toFixed(1) : '0.0'}
+                            <i class="fas fa-star"></i> ${parseFloat(rating).toFixed(1)}
                         </span>
-                        <a href="article.html?id=${article.id}" class="btn-primary" style="padding: 5px 15px; font-size: 0.8rem;">Baca</a>
+                        <a href="article.html?id=${id}" class="btn-primary" style="padding: 5px 15px; font-size: 0.8rem;">Baca</a>
                     </div>
                 </div>
             </div>
@@ -168,17 +183,21 @@ function displayArticles(articles, containerId) {
 function formatDate(dateString) {
     if (!dateString) return 'Tanggal tidak tersedia';
     
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    } catch (error) {
+        return 'Tanggal tidak tersedia';
+    }
 }
 
 // Fungsi untuk view kategori
-function viewCategory(slug) {
-    window.location.href = `articles.html?category=${slug}`;
+function viewCategory(id) {
+    window.location.href = `articles.html?category=${id}`;
 }
 
 // Fungsi untuk setup event listeners
@@ -258,10 +277,25 @@ function setupUserDropdown() {
 }
 
 // Fungsi untuk logout
-function logout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
+async function logout() {
+    try {
+        if (authToken) {
+            // Call logout API if available
+            await fetch(`${API_BASE_URL}/auth/logout`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+    } finally {
+        // Clear local storage
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+        window.location.href = 'index.html';
+    }
 }
 
 // Fungsi untuk API call dengan authentication
@@ -277,6 +311,15 @@ async function apiCall(endpoint, options = {}) {
     
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, finalOptions);
+        
+        // Handle 401 Unauthorized
+        if (response.status === 401) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'auth.html?mode=login';
+            throw new Error('Session expired');
+        }
+        
         const result = await response.json();
         
         if (!response.ok) {
@@ -293,12 +336,12 @@ async function apiCall(endpoint, options = {}) {
 // Fallback data jika API tidak tersedia
 function getFallbackCategories() {
     return [
-        { id: 1, nama: 'IT & Teknologi', slug: 'it-teknologi', deskripsi: 'Masalah hardware, software, dan jaringan', icon: 'fa-laptop-code', article_count: 45 },
-        { id: 2, nama: 'Operasional', slug: 'operasional', deskripsi: 'Masalah proses kerja dan SOP', icon: 'fa-cogs', article_count: 32 },
-        { id: 3, nama: 'Administrasi', slug: 'administrasi', deskripsi: 'Pengelolaan dokumen dan laporan', icon: 'fa-file-invoice', article_count: 28 },
-        { id: 4, nama: 'HRD & Personalia', slug: 'hrd-personalia', deskripsi: 'Masalah kepegawaian dan cuti', icon: 'fa-users', article_count: 24 },
-        { id: 5, nama: 'Keuangan', slug: 'keuangan', deskripsi: 'Pengelolaan anggaran dan pembayaran', icon: 'fa-money-bill-wave', article_count: 19 },
-        { id: 6, nama: 'Marketing', slug: 'marketing', deskripsi: 'Strategi pemasaran dan penjualan', icon: 'fa-chart-line', article_count: 15 }
+        { id: 1, nama: 'IT & Teknologi', deskripsi: 'Masalah hardware, software, dan jaringan', icon: 'fa-laptop-code', article_count: 45 },
+        { id: 2, nama: 'Operasional', deskripsi: 'Masalah proses kerja dan SOP', icon: 'fa-cogs', article_count: 32 },
+        { id: 3, nama: 'Administrasi', deskripsi: 'Pengelolaan dokumen dan laporan', icon: 'fa-file-invoice', article_count: 28 },
+        { id: 4, nama: 'HRD & Personalia', deskripsi: 'Masalah kepegawaian dan cuti', icon: 'fa-users', article_count: 24 },
+        { id: 5, nama: 'Keuangan', deskripsi: 'Pengelolaan anggaran dan pembayaran', icon: 'fa-money-bill-wave', article_count: 19 },
+        { id: 6, nama: 'Marketing', deskripsi: 'Strategi pemasaran dan penjualan', icon: 'fa-chart-line', article_count: 15 }
     ];
 }
 
