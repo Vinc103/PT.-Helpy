@@ -8,8 +8,8 @@ class User {
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       
       const sql = `
-        INSERT INTO users (nama, email, password, role, departemen, avatar)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO users (nama, email, password, role, departemen, avatar, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, TRUE)
       `;
       
       const result = await db.query(sql, [
@@ -46,7 +46,12 @@ class User {
   // Find user by email
   static async findByEmail(email) {
     try {
-      const sql = 'SELECT * FROM users WHERE email = ? AND is_active = TRUE';
+      const sql = `
+        SELECT id, nama, email, password, role, departemen, avatar, 
+               is_active, last_login, created_at
+        FROM users 
+        WHERE email = ? AND is_active = TRUE
+      `;
       const users = await db.query(sql, [email]);
       return users[0] || null;
     } catch (error) {
@@ -65,9 +70,8 @@ class User {
         if (allowedFields.includes(key)) {
           if (key === 'password') {
             // Hash new password
-            const hashedPassword = bcrypt.hashSync(updates[key], 10);
             fields.push(`${key} = ?`);
-            values.push(hashedPassword);
+            values.push(bcrypt.hashSync(updates[key], 10));
           } else {
             fields.push(`${key} = ?`);
             values.push(updates[key]);
@@ -134,6 +138,42 @@ class User {
       return await db.query(sql, [searchTerm, searchTerm]);
     } catch (error) {
       throw error;
+    }
+  }
+
+  // Create admin user if not exists
+  static async createDefaultAdmin() {
+    try {
+      // Check if admin already exists
+      const admin = await this.findByEmail('admin@helper.com');
+      
+      if (!admin) {
+        console.log('Creating default admin user...');
+        
+        const adminPassword = await bcrypt.hash('admin123', 10);
+        
+        const sql = `
+          INSERT INTO users (nama, email, password, role, departemen, is_active)
+          VALUES (?, ?, ?, ?, ?, TRUE)
+        `;
+        
+        await db.query(sql, [
+          'Admin Helper',
+          'admin@helper.com',
+          adminPassword,
+          'admin',
+          'IT'
+        ]);
+        
+        console.log('✅ Default admin user created');
+        console.log('   Email: admin@helper.com');
+        console.log('   Password: admin123');
+        console.log('   ⚠️ Please change password after first login!');
+      } else {
+        console.log('✅ Admin user already exists');
+      }
+    } catch (error) {
+      console.error('❌ Error creating default admin:', error.message);
     }
   }
 }

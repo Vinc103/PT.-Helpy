@@ -7,7 +7,7 @@ class AuthController {
   static generateToken(userId) {
     return jwt.sign(
       { userId },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'wiki_helper_secret_key_2024',
       { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
   }
@@ -66,7 +66,7 @@ class AuthController {
         }
       });
     } catch (error) {
-      console.error('Register error:', error);
+      console.error('❌ Register error:', error);
       res.status(500).json({
         success: false,
         message: 'Terjadi kesalahan pada server.'
@@ -87,23 +87,31 @@ class AuthController {
 
       const { email, password } = req.body;
 
+      console.log(`🔐 Login attempt for: ${email}`);
+
       // Find user
       const user = await User.findByEmail(email);
       if (!user) {
+        console.log(`❌ User not found: ${email}`);
         return res.status(401).json({
           success: false,
           message: 'Email atau password salah.'
         });
       }
 
+      console.log(`✅ User found: ${user.email}, Role: ${user.role}`);
+
       // Verify password
       const isPasswordValid = await User.comparePassword(password, user.password);
       if (!isPasswordValid) {
+        console.log(`❌ Invalid password for: ${email}`);
         return res.status(401).json({
           success: false,
           message: 'Email atau password salah.'
         });
       }
+
+      console.log(`✅ Password verified for: ${email}`);
 
       // Generate token
       const token = AuthController.generateToken(user.id);
@@ -111,19 +119,30 @@ class AuthController {
       // Update last login
       await User.updateLastLogin(user.id);
 
-      // Remove password from response
-      delete user.password;
+      // Prepare user data for response
+      const userData = {
+        id: user.id,
+        nama: user.nama,
+        email: user.email,
+        role: user.role,
+        departemen: user.departemen,
+        avatar: user.avatar,
+        last_login: user.last_login
+      };
 
       res.json({
         success: true,
         message: 'Login berhasil.',
         data: {
-          user,
+          user: userData,
           token
         }
       });
+
+      console.log(`✅ Login successful for: ${email}, Role: ${user.role}`);
+
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', error);
       res.status(500).json({
         success: false,
         message: 'Terjadi kesalahan pada server.'
@@ -148,7 +167,7 @@ class AuthController {
         data: user
       });
     } catch (error) {
-      console.error('Get profile error:', error);
+      console.error('❌ Get profile error:', error);
       res.status(500).json({
         success: false,
         message: 'Terjadi kesalahan pada server.'
@@ -176,7 +195,7 @@ class AuthController {
         data: user
       });
     } catch (error) {
-      console.error('Update profile error:', error);
+      console.error('❌ Update profile error:', error);
       res.status(500).json({
         success: false,
         message: 'Terjadi kesalahan pada server.'
@@ -184,7 +203,7 @@ class AuthController {
     }
   }
 
-  // Logout (client-side only)
+  // Logout
   static logout(req, res) {
     res.json({
       success: true,
@@ -202,7 +221,25 @@ class AuthController {
         data: { token }
       });
     } catch (error) {
-      console.error('Refresh token error:', error);
+      console.error('❌ Refresh token error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Terjadi kesalahan pada server.'
+      });
+    }
+  }
+
+  // Check admin status
+  static async checkAdmin(req, res) {
+    try {
+      res.json({
+        success: true,
+        data: {
+          isAdmin: req.user.role === 'admin'
+        }
+      });
+    } catch (error) {
+      console.error('❌ Check admin error:', error);
       res.status(500).json({
         success: false,
         message: 'Terjadi kesalahan pada server.'
