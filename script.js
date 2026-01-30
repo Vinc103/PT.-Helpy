@@ -336,12 +336,12 @@ async function apiCall(endpoint, options = {}) {
 // Fallback data jika API tidak tersedia
 function getFallbackCategories() {
     return [
-        { id: 1, nama: 'IT & Teknologi', deskripsi: 'Masalah hardware, software, dan jaringan', icon: 'fa-laptop-code', article_count: 45 },
-        { id: 2, nama: 'Operasional', deskripsi: 'Masalah proses kerja dan SOP', icon: 'fa-cogs', article_count: 32 },
-        { id: 3, nama: 'Administrasi', deskripsi: 'Pengelolaan dokumen dan laporan', icon: 'fa-file-invoice', article_count: 28 },
-        { id: 4, nama: 'HRD & Personalia', deskripsi: 'Masalah kepegawaian dan cuti', icon: 'fa-users', article_count: 24 },
-        { id: 5, nama: 'Keuangan', deskripsi: 'Pengelolaan anggaran dan pembayaran', icon: 'fa-money-bill-wave', article_count: 19 },
-        { id: 6, nama: 'Marketing', deskripsi: 'Strategi pemasaran dan penjualan', icon: 'fa-chart-line', article_count: 15 }
+        { id: 1, nama: 'IT & Teknologi', deskripsi: 'Masalah hardware, software, dan jaringan', icon: 'fa-laptop-code', article_count: 1 },
+        { id: 2, nama: 'Operasional', deskripsi: 'Masalah proses kerja dan SOP', icon: 'fa-cogs', article_count: 1 },
+        { id: 3, nama: 'Administrasi', deskripsi: 'Pengelolaan dokumen dan laporan', icon: 'fa-file-invoice', article_count: 1},
+        { id: 4, nama: 'HRD & Personalia', deskripsi: 'Masalah kepegawaian dan cuti', icon: 'fa-users', article_count: 1 },
+        { id: 5, nama: 'Keuangan', deskripsi: 'Pengelolaan anggaran dan pembayaran', icon: 'fa-money-bill-wave', article_count: 1 },
+        { id: 6, nama: 'Marketing', deskripsi: 'Strategi pemasaran dan penjualan', icon: 'fa-chart-line', article_count: 1 }
     ];
 }
 
